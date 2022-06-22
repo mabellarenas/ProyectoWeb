@@ -39,6 +39,21 @@ def getUsuarios():
     user = list(map(lambda x: x.serialize(), user))
     return jsonify(user),200
 
+
+@app.route('/usuarios/<id>', methods=['PUT'])
+def updateUsuario(id):
+    user = Usuario.query.get(id)
+
+    user.primer_nombre = request.json.get('primer_nombre')
+    user.segundo_nombre = request.json.get('segundo_nombre')
+    user.apellido_paterno = request.json.get('apellido_paterno')
+    user.apellido_materno = request.json.get('apellido_materno')
+    user.direccion = request.json.get('direccion')
+
+    Usuario.save(user)
+
+    return jsonify(user.serialize()),200
+
 @app.route('/usuarios' , methods=['POST'])
 def addUsuario():
     user = Usuario()
