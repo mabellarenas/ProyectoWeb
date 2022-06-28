@@ -42,7 +42,7 @@
     </nav> 
   </header>
 
-  <div class="px-4 pt-5 mt-5 pb-4 mb-4 text-center">
+  <div class="px-1 pt-3 mt-3 pb-2 mb-2 text-center">
     
     <h1 class="display-5 fw-bold pt-4 mt-4">Tienda Perro FiXa</h1>
     <div class="col-lg-6 mx-auto">
@@ -86,122 +86,245 @@
   </nav>
 
   <!--Estas son las tarjetas-->
-<div class="container">
-  <div class="row">
-    <div class="col-md-4 mb-4">
-      <div class="card" style="width: 18rem;">
-        <img src="imgs/lentes.jpg" class="card-img-top" alt="...">
-        <div class="card-body">
-          <h5 class="card-title">Lentes de sol</h5>
-          <p class="card-text">Divertido y seguro. Lentes para perros y gatos. Diferentes tamaños y colores</p>
-          <a href="#" class="btn btn-primary">Agregar al carro</a>
+
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=10.000, maximum-scale=10.000, minimum-scale=1">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
     
+
+    <script>
+
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // Variables
+            const baseDeDatos = [
+                {
+                    id: 1,
+                    nombre: 'Ropa Facherita',
+                    precio: 10000,
+                    imagen: '/static/imgs/ropa.png'
+                },
+                {
+                    id: 2,
+                    nombre: 'Alimentos',
+                    precio: 12990,
+                    imagen: '/static/imgs/alimento.png'
+                },
+                {
+                    id: 3,
+                    nombre: 'Collar led',
+                    precio: 10000,
+                    imagen: '/static/imgs/juguetes.png'
+                },
+                {
+                    id: 4,
+                    nombre: 'Lentes',
+                    precio: 1990,
+                    imagen: '/static/imgs/lentes.jpg'
+                },
+                {
+                    id: 5,
+                    nombre: 'Cama Perro',
+                    precio: 1990,
+                    imagen: '/static/imgs/cama_perro2.webp'
+                },
+                {
+                    id: 6,
+                    nombre: 'Vestidos',
+                    precio: 1990,
+                    imagen: '/static/imgs/vestidos.jpg'
+                }
+
+            ];
+
+            let carrito = [];
+            const divisa = '$';
+            const DOMitems = document.querySelector('#items');
+            const DOMcarrito = document.querySelector('#carrito');
+            const DOMtotal = document.querySelector('#total');
+            const DOMbotonVaciar = document.querySelector('#boton-vaciar');
+            const miLocalStorage = window.localStorage;
+
+            // Funciones
+
+            /**
+            * Dibuja todos los productos a partir de la base de datos. No confundir con el carrito
+            */
+            function renderizarProductos() {
+                baseDeDatos.forEach((info) => {
+                    // Estructura
+                    const miNodo = document.createElement('div');
+                    miNodo.classList.add('card', 'col-sm-4');
+                    // Body
+                    const miNodoCardBody = document.createElement('div');
+                    miNodoCardBody.classList.add('card-body');
+                    // Titulo
+                    const miNodoTitle = document.createElement('h5');
+                    miNodoTitle.classList.add('card-title');
+                    miNodoTitle.textContent = info.nombre;
+                    // Imagen
+                    const miNodoImagen = document.createElement('img');
+                    miNodoImagen.classList.add('img-fluid');
+                    miNodoImagen.setAttribute('src', info.imagen);
+                    // Precio
+                    const miNodoPrecio = document.createElement('p');
+                    miNodoPrecio.classList.add('card-text');
+                    miNodoPrecio.textContent = `${divisa}${info.precio}`;
+                    // Boton 
+                    const miNodoBoton = document.createElement('button');
+                    miNodoBoton.classList.add('btn', 'btn-primary');
+                    miNodoBoton.textContent = '+';
+                    miNodoBoton.setAttribute('marcador', info.id);
+                    miNodoBoton.addEventListener('click', anyadirProductoAlCarrito);
+                    // Insertamos
+                    miNodoCardBody.appendChild(miNodoImagen);
+                    miNodoCardBody.appendChild(miNodoTitle);
+                    miNodoCardBody.appendChild(miNodoPrecio);
+                    miNodoCardBody.appendChild(miNodoBoton);
+                    miNodo.appendChild(miNodoCardBody);
+                    DOMitems.appendChild(miNodo);
+                });
+            }
+
+            /**
+            * Evento para añadir un producto al carrito de la compra
+            */
+            function anyadirProductoAlCarrito(evento) {
+                // Anyadimos el Nodo a nuestro carrito
+                carrito.push(evento.target.getAttribute('marcador'))
+                // Actualizamos el carrito 
+                renderizarCarrito();
+                // Actualizamos el LocalStorage
+                guardarCarritoEnLocalStorage();
+            }
+
+            /**
+            * Dibuja todos los productos guardados en el carrito
+            */
+            function renderizarCarrito() {
+                // Vaciamos todo el html
+                DOMcarrito.textContent = '';
+                // Quitamos los duplicados
+                const carritoSinDuplicados = [...new Set(carrito)];
+                // Generamos los Nodos a partir de carrito
+                carritoSinDuplicados.forEach((item) => {
+                    // Obtenemos el item que necesitamos de la variable base de datos
+                    const miItem = baseDeDatos.filter((itemBaseDatos) => {
+                        // ¿Coincide las id? Solo puede existir un caso
+                        return itemBaseDatos.id === parseInt(item);
+                    });
+                    // Cuenta el número de veces que se repite el producto
+                    const numeroUnidadesItem = carrito.reduce((total, itemId) => {
+                        // ¿Coincide las id? Incremento el contador, en caso contrario no mantengo
+                        return itemId === item ? total += 1 : total;
+                    }, 0);
+                    // Creamos el nodo del item del carrito
+                    const miNodo = document.createElement('li');
+                    miNodo.classList.add('list-group-item', 'text-right', 'mx-2');
+                    miNodo.textContent = `${numeroUnidadesItem} x ${miItem[0].nombre} - ${miItem[0].precio}${divisa}`;
+                    // Boton de borrar
+                    const miBoton = document.createElement('button');
+                    miBoton.classList.add('btn', 'btn-danger', 'mx-5');
+                    miBoton.textContent = 'X';
+                    miBoton.style.marginLeft = '1rem';
+                    miBoton.dataset.item = item;
+                    miBoton.addEventListener('click', borrarItemCarrito);
+                    // Mezclamos nodos
+                    miNodo.appendChild(miBoton);
+                    DOMcarrito.appendChild(miNodo);
+                });
+                // Renderizamos el precio total en el HTML
+                DOMtotal.textContent = calcularTotal();
+            }
+
+            /**
+            * Evento para borrar un elemento del carrito
+            */
+            function borrarItemCarrito(evento) {
+                // Obtenemos el producto ID que hay en el boton pulsado
+                const id = evento.target.dataset.item;
+                // Borramos todos los productos
+                carrito = carrito.filter((carritoId) => {
+                    return carritoId !== id;
+                });
+                // volvemos a renderizar
+                renderizarCarrito();
+                // Actualizamos el LocalStorage
+                guardarCarritoEnLocalStorage();
+
+            }
+
+            /**
+             * Calcula el precio total teniendo en cuenta los productos repetidos
+             */
+            function calcularTotal() {
+                // Recorremos el array del carrito 
+                return carrito.reduce((total, item) => {
+                    // De cada elemento obtenemos su precio
+                    const miItem = baseDeDatos.filter((itemBaseDatos) => {
+                        return itemBaseDatos.id === parseInt(item);
+                    });
+                    // Los sumamos al total
+                    return total + miItem[00].precio;
+                }, 0).toFixed();
+            }
+
+            /**
+            * Varia el carrito y vuelve a dibujarlo
+            */
+            function vaciarCarrito() {
+                // Limpiamos los productos guardados
+                carrito = [];
+                // Renderizamos los cambios
+                renderizarCarrito();
+                // Borra LocalStorage
+                localStorage.clear();
+
+            }
+
+            function guardarCarritoEnLocalStorage () {
+                miLocalStorage.setItem('carrito', JSON.stringify(carrito));
+            }
+
+            function cargarCarritoDeLocalStorage () {
+                // ¿Existe un carrito previo guardado en LocalStorage?
+                if (miLocalStorage.getItem('carrito') !== null) {
+                    // Carga la información
+                    carrito = JSON.parse(miLocalStorage.getItem('carrito'));
+                }
+            }
+
+            // Eventos
+            DOMbotonVaciar.addEventListener('click', vaciarCarrito);
+
+            // Inicio
+            cargarCarritoDeLocalStorage();
+            renderizarProductos();
+            renderizarCarrito();
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <!-- Elementos generados a partir del JSON -->
+            <main id="items" class="col-sm-8 row"></main>
+            <!-- Carrito -->
+            <aside class="col-sm-4">
+                <h2>Carrito</h2>
+                <!-- Elementos del carrito -->
+                <ul id="carrito" class="list-group"></ul>
+                <hr>
+                <!-- Precio total -->
+                <p class="text-right">Total : $ <span id="total"></span>.</p>
+                <button id="boton-vaciar" class="btn btn-danger">Vaciar</button>
+            </aside>
         </div>
-      </div>
     </div>
-    <div class="col-md-4 mb-4">
-      <div class="card" style="width: 18rem;">
-        <img src="imgs/collar.jpeg" class="card-img-top" alt="...">
-        <div class="card-body">
-          <h5 class="card-title">Collar fluor</h5>
-          <p class="card-text">Collar fluor para perros y gatos, ideal para la noche</p>
-          <a href="#" class="btn btn-primary">Agregar al carro</a>
-    
-        </div>
-      </div>
-    </div>
-    <div class="col-md-4 mb-4">
-      <div class="card" style="width: 18rem;">
-        <img src="imgs/chaleco.png" class="card-img-top" alt="...">
-        <div class="card-body">
-          <h5 class="card-title">Chalecos con correa</h5>
-          <p class="card-text">Chalecos con correa, diferentes tamaños y colores</p>
-          <a href="#" class="btn btn-primary">Agregar al carro</a>
-    
-        </div>
-      </div>
-    </div>
-    <div class="col-md-4 mb-4">
-      <div class="card" style="width: 18rem;">
-        <img src="imgs/mochilas.jpg" class="card-img-top" alt="...">
-        <div class="card-body">
-          <h5 class="card-title">Mochilas de paseo</h5>
-          <p class="card-text">Comoda mochila, especial para salir de paseo.</p>
-          <a href="#" class="btn btn-primary">Agregar al carro</a>
-    
-        </div>
-      </div>
-    </div>
-    <div class="col-md-4 mb-4">
-      <div class="card" style="width: 18rem;">
-        <img src="imgs/bolsa.jpg" class="card-img-top" alt="...">
-        <div class="card-body">
-          <h5 class="card-title">Bolsas fecas</h5>
-          <p class="card-text">Bolsa de fecas biodegradables</p>
-          <a href="#" class="btn btn-primary">Agregar al carro</a>
-    
-        </div>
-      </div>
-    </div>
-    <div class="col-md-4 mb-4">
-      <div class="card" style="width: 18rem;">
-        <img src="imgs/calcetines.jpg" class="card-img-top" alt="...">
-        <div class="card-body">
-          <h5 class="card-title">Calcetines</h5>
-          <p class="card-text">Comodos y antideslizantes. Diferentes tamaños, diferentes modelos y colores.</p>
-          <a href="#" class="btn btn-primary">Agregar al carro</a>
-    
-        </div>
-      </div>
-    </div>
-    <div class="col-md-4 mb-4">
-      <div class="card" style="width: 18rem;">
-        <img src="imgs/pienetas.jpg" class="card-img-top" alt="...">
-        <div class="card-body">
-          <h5 class="card-title">Peineta</h5>
-          <p class="card-text">Manten a tu mascota libre de pelos muertos</p>
-          <a href="#" class="btn btn-primary">Agregar al carro</a>
-    
-        </div>
-      </div>
-    </div>
-    <div class="col-md-4 mb-4">
-      <div class="card" style="width: 18rem;">
-        <img src="imgs/arena.jpeg" class="card-img-top" alt="...">
-        <div class="card-body">
-          <h5 class="card-title">Arena de gato</h5>
-          <p class="card-text">Arena fina de gato </p>
-          <a href="#" class="btn btn-primary">Agregar al carro</a>
-    
-        </div>
-      </div>
-    </div>
-    <div class="col-md-4 mb-4">
-      <div class="card" style="width: 18rem;">
-        <img src="imgs/juguetes2.jpg" class="card-img-top" alt="...">
-        <div class="card-body">
-          <h5 class="card-title">Juguetes</h5>
-          <p class="card-text">Mordedores, cuerdas, pelotas, etc...</p>
-          <a href="#" class="btn btn-primary">Agregar al carro</a>
-    
-        </div>
-      </div>
-    </div>
-    <div class="col-md-4 mb-4">
-      <div class="card" style="width: 18rem;">
-        <img src="imgs/vestidos.jpg" class="card-img-top" alt="...">
-        <div class="card-body">
-          <h5 class="card-title">Vestidos</h5>
-          <p class="card-text">Hermosos vestidos para tu regalona.</p>
-          <a href="#" class="btn btn-primary">Agregar al carro</a>
-    
-        </div>
-      </div>
-    </div>
-    
-  </div>
-</div>
-  
+</body>
+</html>
   
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous"></script>
